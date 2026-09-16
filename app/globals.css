@@ -1,53 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f0f9ff;
+  --background: #f8fafc;
   --foreground: #0f172a;
-
-  --ppm-green: #0284c7; /* Biru Tut Wuri Handayani */
-  --ppm-green-dark: #0369a1;
-  --ppm-green-darker: #075985;
-  --ppm-gold: #dc2626; /* Merah SD Accent */
-  --ppm-gold-dark: #b91c1c;
-  --ppm-cream: #e0f2fe;
-  --ppm-border: #bae6fd;
-
-  --status-hadir: #16a34a;
-  --status-terlambat: #d97706;
-  --status-izin: #0284c7;
-  --status-sakit: #2563eb;
-  --status-alpa: #dc2626;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-ppm-green: var(--ppm-green);
-  --color-ppm-green-dark: var(--ppm-green-dark);
-  --color-ppm-green-darker: var(--ppm-green-darker);
-  --color-ppm-gold: var(--ppm-gold);
-  --color-ppm-gold-dark: var(--ppm-gold-dark);
-  --color-ppm-cream: var(--ppm-cream);
-  --color-ppm-border: var(--ppm-border);
+  --primary-navy: #1e293b;
+  --secondary-slate: #334155;
+  --accent-blue: #2563eb;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
 }
 
-.font-display {
-  font-family: Georgia, "Times New Roman", "Noto Serif", serif;
-  letter-spacing: 0.01em;
+/* Custom UI Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid #e2e8f0;
 }
 
-/* Scrollbar tipis untuk tabel matrix yang lebar */
-.scroll-thin::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
+.navy-gradient {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
 }
-.scroll-thin::-webkit-scrollbar-thumb {
-  background-color: var(--ppm-border);
-  border-radius: 9999px;
+
+.blue-gradient {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
 }

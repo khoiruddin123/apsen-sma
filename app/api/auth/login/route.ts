@@ -1,34 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifyCredentials, createSession, setSessionCookie } from "@/lib/auth";
+import { NextResponse } from "next/server";
+import { verifyUserCredentials, createSession, setSessionCookie } from "@/lib/auth";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const username = String(body.username ?? "");
-    const password = String(body.password ?? "");
+    const { username, password } = body;
 
     if (!username || !password) {
       return NextResponse.json(
-        { ok: false, message: "Username dan password wajib diisi." },
+        { error: "Username/NISN dan Password wajib diisi." },
         { status: 400 }
       );
     }
 
-    const valid = await verifyCredentials(username, password);
-    if (!valid) {
+    const userData = await verifyUserCredentials(username, password);
+    if (!userData) {
       return NextResponse.json(
-        { ok: false, message: "Username atau password salah." },
+        { error: "Username/NISN atau Password tidak sesuai." },
         { status: 401 }
       );
     }
 
-    const token = await createSession(username);
+    const token = await createSession(userData);
     await setSessionCookie(token);
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      user: userData,
+    });
   } catch (err: any) {
     return NextResponse.json(
-      { ok: false, message: err.message ?? "Terjadi kesalahan pada server." },
+      { error: err.message || "Terjadi kesalahan server." },
       { status: 500 }
     );
   }

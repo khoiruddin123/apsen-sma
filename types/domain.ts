@@ -1,108 +1,93 @@
 export type Gender = "L" | "P";
 
-export type SessionType = string;
+export type UserRole = "siswa" | "guru" | "wali_kelas" | "admin";
 
-export type AttendanceStatus = "hadir" | "terlambat" | "izin" | "sakit" | "alpa";
+export type AttendanceStatus = "hadir" | "sakit" | "izin" | "alpa";
 
 export const ATTENDANCE_STATUS_LABEL: Record<AttendanceStatus, string> = {
   hadir: "Hadir",
-  terlambat: "Terlambat",
-  izin: "Izin",
   sakit: "Sakit",
+  izin: "Izin",
   alpa: "Alpa",
 };
 
-export const ATTENDANCE_STATUS_CODE: Record<AttendanceStatus, string> = {
-  hadir: "H",
-  terlambat: "T",
-  izin: "I",
-  sakit: "S",
-  alpa: "A",
+export const ATTENDANCE_STATUS_COLOR: Record<AttendanceStatus, string> = {
+  hadir: "bg-emerald-100 text-emerald-800 border-emerald-300",
+  sakit: "bg-amber-100 text-amber-800 border-amber-300",
+  izin: "bg-blue-100 text-blue-800 border-blue-300",
+  alpa: "bg-rose-100 text-rose-800 border-rose-300",
 };
 
 export interface ClassRow {
   id: string;
   name: string;
+  grade: string;
+  major: string;
   sort_order: number;
 }
 
-export interface GroupRow {
+export interface UserRow {
   id: string;
-  class_id: string;
-  gender: Gender;
+  username: string;
   name: string;
-  sort_order: number;
+  role: UserRole;
+  class_id?: string | null;
+  class_name?: string | null;
 }
 
 export interface StudentRow {
   id: string;
-  nis: string;
+  nisn: string;
   name: string;
   class_id: string;
   gender: Gender;
-  generation: string | null;
   active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
 }
 
 export interface StudentWithClass extends StudentRow {
   class_name: string;
-  group_name: string;
-}
-
-export interface OperatorRow {
-  id: string;
-  student_id: string;
-  group_id: string;
-  active: boolean;
-}
-
-export interface SessionSettingRow {
-  id: string;
-  session_type: SessionType;
-  label: string;
-  scan_start_time: string;
-  on_time_until: string;
-  end_time: string;
 }
 
 export interface AttendanceSessionRow {
   id: string;
+  subject_name: string;
+  class_id: string;
+  class_name?: string;
+  teacher_id: string | null;
+  teacher_name: string;
   session_date: string;
-  session_type: SessionType;
-  scan_start_time: string;
-  on_time_until: string;
-  end_time: string;
+  start_time: string;
+  end_time?: string | null;
+  qr_token: string;
   status: "open" | "closed";
-}
-
-export interface SessionGroupRow {
-  id: string;
-  session_id: string;
-  group_id: string;
-  opened: boolean;
-  closed_manually: boolean;
-  finalized: boolean;
+  created_at?: string;
 }
 
 export interface AttendanceRecordRow {
   id: string;
   session_id: string;
   student_id: string;
-  group_id: string;
+  student_name?: string;
+  student_nisn?: string;
   status: AttendanceStatus;
   scanned_at: string | null;
-  source: "scan" | "manual_nis" | "auto_alpa" | "edited";
-  operator_id: string | null;
-  class_id_snapshot: string;
-  group_name_snapshot: string;
-  gender_snapshot: Gender;
+  source: "qr_scan_siswa" | "manual_guru";
+  notes?: string | null;
 }
 
 export interface ScanResult {
   ok: boolean;
   message: string;
   studentName?: string;
+  subjectName?: string;
   status?: AttendanceStatus;
+}
+
+export interface AuthSessionData {
+  userId: string;
+  username: string;
+  name: string;
+  role: UserRole;
+  classId?: string | null;
 }

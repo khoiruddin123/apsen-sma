@@ -1,0 +1,99 @@
+<mxfile host="app.diagrams.net" modified="2026-09-16T12:00:00.000Z" agent="Antigravity" etag="apsen-sma-usecase-3actors" version="21.0.0" type="device">
+  <diagram id="usecase-apsen-sma" name="Use Case APSEN SMA (3 Aktor)">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- System Boundary -->
+        <mxCell id="sys_boundary" value="🏫 System Boundary: Aplikasi Presensi KBM SMA (APSEN SMA)" style="shape=swimlane;whiteSpace=wrap;html=1;startSize=30;horizontal=1;startSize=30;fillColor=#f8fafc;strokeColor=#1e293b;fontStyle=1;fontSize=14;fontColor=#0f172a;" vertex="1" parent="1">
+          <mxGeometry x="260" y="40" width="580" height="740" as="geometry" />
+        </mxCell>
+
+        <!-- Use Cases inside boundary -->
+        <!-- AKTOR 1: MURID -->
+        <mxCell id="uc1" value="UC-01: Login Murid / Siswa (NISN)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="50" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc2" value="UC-02: Scan QR Code Pelajaran (Kamera HP)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="105" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc3" value="UC-03: Lihat Status &amp; Riwayat Presensi Saya" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="160" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- AKTOR 2: GURU MAPEL -->
+        <mxCell id="uc4" value="UC-04: Login Guru Mata Pelajaran" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="230" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc5" value="UC-05: Buka Sesi KBM (Mapel &amp; Kelas SMA)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="285" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc6" value="UC-06: Display QR Code Pelajaran di Layar" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="340" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc7" value="UC-07: Monitoring Kehadiran Real-time" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="395" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc8" value="UC-08: Input / Edit Presensi Manual (H/S/I/A)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="450" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc9" value="UC-09: Tutup Sesi Pembelajaran" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="505" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- AKTOR 3: WALI KELAS -->
+        <mxCell id="uc10" value="UC-10: Login Wali Kelas" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#9333ea;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="575" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc11" value="UC-11: Monitoring Aktivitas Guru di Kelas Bimbingan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#9333ea;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="630" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc12" value="UC-12: Rekap Presensi &amp; Export Excel Kelas" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#9333ea;fontStyle=1;fontSize=11;" vertex="1" parent="sys_boundary">
+          <mxGeometry x="150" y="685" width="280" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Actors -->
+        <mxCell id="actor_murid" value="👦 Aktor 1: Murid" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#16a34a;strokeColor=#15803d;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="120" width="50" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor_guru" value="👨‍🏫 Aktor 2: Guru Mapel" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#2563eb;strokeColor=#1d4ed8;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="380" width="50" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor_walikelas" value="👨‍💼 Aktor 3: Wali Kelas" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#9333ea;strokeColor=#7e22ce;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="640" width="50" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Edges Actor 1 -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_murid" target="uc1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_murid" target="uc2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_murid" target="uc3"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Edges Actor 2 -->
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_guru" target="uc4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_guru" target="uc5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_guru" target="uc6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_guru" target="uc7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_guru" target="uc8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_guru" target="uc9"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Edges Actor 3 -->
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_walikelas" target="uc10"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_walikelas" target="uc11"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="actor_walikelas" target="uc12"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,155 +1,114 @@
-import "server-only";
-import pool from "@/lib/db";
-import type { SessionType } from "@/types/domain";
-import type { RowDataPacket } from "mysql2";
+import { query, queryOne, execute } from "@/lib/db";
+import { AttendanceSessionRow } from "@/types/domain";
 import { v4 as uuidv4 } from "uuid";
 
-export interface CreateSessionInput {
-  sessionDate: string;
-  sessionType: SessionType;
-  scanStartTime: string;
-  onTimeUntil: string;
-  endTime: string;
-  groupIds: string[];
-}
+export async function openSession(data: {
+  subject_name: string;
+  class_id: string;
+  teacher_id?: string | null;
+  teacher_name: string;
+}): Promise<AttendanceSessionRow> {
+  const sessionId = `ses-${uuidv4().substring(0, 8)}`;
+  const qrToken = `QR-${uuidv4().substring(0, 8).toUpperCase()}`;
+  const today = new Date().toISOString().split("T")[0];
+  const startTime = new Date().toTimeString().split(" ")[0];
 
-export async function createSession(input: CreateSessionInput) {
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
-
-    const [existing] = await connection.query<RowDataPacket[]>(
-      `SELECT id FROM attendance_sessions WHERE session_date = ? AND session_type = ? LIMIT 1`,
-      [input.sessionDate, input.sessionType]
-    );
-
-    if (existing.length > 0) {
-      throw new Error(
-        `Sesi mata pelajaran "${input.sessionType}" untuk tanggal ${input.sessionDate} sudah pernah dibuka.`
-      );
-    }
-
-    const sessionId = uuidv4();
-    await connection.query(
-      `INSERT INTO attendance_sessions (id, session_date, session_type, scan_start_time, on_time_until, end_time, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'open')`,
-      [sessionId, input.sessionDate, input.sessionType, input.scanStartTime, input.onTimeUntil, input.endTime]
-    );
-
-    if (input.groupIds.length > 0) {
-      // batch insert
-      const insertData = input.groupIds.map(groupId => [
-        uuidv4(), sessionId, groupId, 1, 0, 0
-      ]);
-      await connection.query(
-        `INSERT INTO session_groups (id, session_id, group_id, opened, closed_manually, finalized) VALUES ?`,
-        [insertData]
-      );
-    }
-
-    await connection.commit();
-    return sessionId;
-  } catch (err) {
-    await connection.rollback();
-    throw err;
-  } finally {
-    connection.release();
-  }
-}
-
-export async function listSessions(limit = 30) {
-  const [sessions] = await pool.query<RowDataPacket[]>(
-    `SELECT id, session_date, session_type, scan_start_time, on_time_until, end_time, status
-     FROM attendance_sessions
-     ORDER BY session_date DESC, session_type DESC
-     LIMIT ?`,
-    [limit]
+  await execute(
+    `INSERT INTO attendance_sessions 
+     (id, subject_name, class_id, teacher_id, teacher_name, session_date, start_time, qr_token, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open')`,
+    [
+      sessionId,
+      data.subject_name.trim(),
+      data.class_id,
+      data.teacher_id ?? null,
+      data.teacher_name.trim(),
+      today,
+      startTime,
+      qrToken,
+    ]
   );
 
-  if (sessions.length === 0) return [];
-
-  const sessionIds = sessions.map(s => s.id);
-  const [sessionGroups] = await pool.query<RowDataPacket[]>(
-    `SELECT sg.id, sg.session_id, sg.opened, sg.closed_manually, sg.finalized, sg.group_id, g.name as group_name
-     FROM session_groups sg
-     LEFT JOIN groups g ON sg.group_id = g.id
-     WHERE sg.session_id IN (?)`,
-    [sessionIds]
+  // Otomatis buatkan record attendance 'alpa' untuk semua siswa di kelas tersebut
+  await execute(
+    `INSERT IGNORE INTO attendance_records (id, session_id, student_id, status, source)
+     SELECT CONCAT('att-', UUID_SHORT()), ?, id, 'alpa', 'qr_scan_siswa'
+     FROM students
+     WHERE class_id = ? AND active = 1`,
+    [sessionId, data.class_id]
   );
 
-  return sessions.map(s => ({
-    ...s,
-    session_groups: sessionGroups.filter(sg => sg.session_id === s.id).map(sg => ({
-      id: sg.id,
-      opened: !!sg.opened,
-      closed_manually: !!sg.closed_manually,
-      finalized: !!sg.finalized,
-      groups: { id: sg.group_id, name: sg.group_name }
-    }))
-  }));
+  const session = await getSessionById(sessionId);
+  if (!session) throw new Error("Gagal membuat sesi KBM.");
+  return session;
 }
 
-export async function getSessionDetail(id: string) {
-  const [sessions] = await pool.query<RowDataPacket[]>(
-    `SELECT id, session_date, session_type, scan_start_time, on_time_until, end_time, status
-     FROM attendance_sessions
-     WHERE id = ? LIMIT 1`,
+export async function closeSession(sessionId: string): Promise<boolean> {
+  const endTime = new Date().toTimeString().split(" ")[0];
+  const result = await execute(
+    "UPDATE attendance_sessions SET status = 'closed', end_time = ? WHERE id = ?",
+    [endTime, sessionId]
+  );
+  return result.affectedRows > 0;
+}
+
+export async function getSessionById(id: string): Promise<AttendanceSessionRow | null> {
+  const row = await queryOne<any>(
+    `SELECT s.*, c.name as class_name
+     FROM attendance_sessions s
+     JOIN classes c ON s.class_id = c.id
+     WHERE s.id = ?`,
     [id]
   );
-
-  if (sessions.length === 0) return null;
-  const session = sessions[0];
-
-  const [sessionGroups] = await pool.query<RowDataPacket[]>(
-    `SELECT sg.id, sg.group_id, sg.opened, sg.closed_manually, sg.finalized, g.name as group_name
-     FROM session_groups sg
-     LEFT JOIN groups g ON sg.group_id = g.id
-     WHERE sg.session_id = ?`,
-    [id]
-  );
-
-  return {
-    ...session,
-    session_groups: sessionGroups.map(sg => ({
-      id: sg.id,
-      group_id: sg.group_id,
-      opened: !!sg.opened,
-      closed_manually: !!sg.closed_manually,
-      finalized: !!sg.finalized,
-      groups: { id: sg.group_id, name: sg.group_name }
-    }))
-  };
+  if (!row) return null;
+  return row;
 }
 
-export async function deleteSession(id: string) {
-  await pool.query(`DELETE FROM attendance_sessions WHERE id = ?`, [id]);
+export async function getSessionByQrToken(qrToken: string): Promise<AttendanceSessionRow | null> {
+  const row = await queryOne<any>(
+    `SELECT s.*, c.name as class_name
+     FROM attendance_sessions s
+     JOIN classes c ON s.class_id = c.id
+     WHERE s.qr_token = ? AND s.status = 'open'`,
+    [qrToken]
+  );
+  if (!row) return null;
+  return row;
 }
 
-export async function toggleSessionGroup(
-  sessionId: string,
-  groupId: string,
-  action: "close" | "reopen"
-) {
-  const [sg] = await pool.query<RowDataPacket[]>(
-    `SELECT id FROM session_groups WHERE session_id = ? AND group_id = ? LIMIT 1`,
-    [sessionId, groupId]
+export async function getActiveSessionByClass(classId: string): Promise<AttendanceSessionRow | null> {
+  const row = await queryOne<any>(
+    `SELECT s.*, c.name as class_name
+     FROM attendance_sessions s
+     JOIN classes c ON s.class_id = c.id
+     WHERE s.class_id = ? AND s.status = 'open'
+     ORDER BY s.created_at DESC LIMIT 1`,
+    [classId]
   );
-  
-  if (sg.length === 0) throw new Error("Kelompok tidak ditemukan pada sesi ini.");
-
-  await pool.query(
-    `UPDATE session_groups SET closed_manually = ? WHERE id = ?`,
-    [action === "close" ? 1 : 0, sg[0].id]
-  );
+  if (!row) return null;
+  return row;
 }
 
-export async function getActiveSessionSummaryForToday(todayStr: string) {
-  const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT id, session_type, scan_start_time, on_time_until, end_time, status
-     FROM attendance_sessions
-     WHERE session_date = ?
-     ORDER BY session_type ASC`,
-    [todayStr]
+export async function getSessionsByTeacher(teacherName: string): Promise<AttendanceSessionRow[]> {
+  const rows = await query<any>(
+    `SELECT s.*, c.name as class_name
+     FROM attendance_sessions s
+     JOIN classes c ON s.class_id = c.id
+     WHERE s.teacher_name = ?
+     ORDER BY s.created_at DESC`,
+    [teacherName]
+  );
+  return rows;
+}
+
+export async function getSessionsByClass(classId: string): Promise<AttendanceSessionRow[]> {
+  const rows = await query<any>(
+    `SELECT s.*, c.name as class_name
+     FROM attendance_sessions s
+     JOIN classes c ON s.class_id = c.id
+     WHERE s.class_id = ?
+     ORDER BY s.created_at DESC`,
+    [classId]
   );
   return rows;
 }

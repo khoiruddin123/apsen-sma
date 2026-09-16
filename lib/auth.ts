@@ -1,47 +1,98 @@
 import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { AuthSessionData, UserRole } from "@/types/domain";
+import { query, queryOne } from "@/lib/db";
 
-/**
- * Autentikasi dashboard sangat sederhana secara sengaja:
- * - Hanya ada 1 akun, username & password berasal dari environment variable.
- * - Tidak ada tabel user, tidak ada registrasi, tidak ada role system.
- * - Session disimpan sebagai JWT ringkas di cookie HttpOnly.
- */
-
-const COOKIE_NAME = "ppm_session";
+const COOKIE_NAME = "apsen_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 12; // 12 jam
 
 function getAuthSecretKey(): Uint8Array {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) {
-    throw new Error("AUTH_SECRET belum diset di environment variables.");
-  }
+  const secret = process.env.AUTH_SECRET || "apsen_sma_secret_key_2026_super_secure";
   return new TextEncoder().encode(secret);
 }
 
-export async function verifyCredentials(
-  username: string,
-  password: string
-): Promise<boolean> {
-  const adminUsername = process.env.ADMIN_USERNAME;
-  const adminPassword = process.env.ADMIN_PASSWORD;
+export async function verifyUserCredentials(
+  usernameInput: string,
+  passwordInput: string
+): Promise<AuthSessionData | null> {
+  const cleanUsername = usernameInput.trim();
+  const cleanPassword = passwordInput.trim();
 
-  if (!adminUsername || !adminPassword) {
-    throw new Error(
-      "ADMIN_USERNAME / ADMIN_PASSWORD belum diset di environment variables."
-    );
+  // 1. Cek dari tabel Users (Guru, Wali Kelas, Admin)
+  const user = await queryOne<{
+    id: string;
+    username: string;
+    name: string;
+    role: UserRole;
+    class_id: string | null;
+    password: string;
+  }>(
+    "SELECT id, username, name, role, class_id, password FROM users WHERE username = ?",
+    [cleanUsername]
+  );
+
+  if (user && user.password === cleanPassword) {
+    return {
+      userId: user.id,
+      username: user.username,
+      name: user.name,
+      role: user.role,
+      classId: user.class_id,
+    };
   }
 
-  return username === adminUsername && password === adminPassword;
+  // 2. Cek dari tabel Students (Murid / Siswa)
+  const student = await queryOne<{
+    id: string;
+    nisn: string;
+    name: string;
+    class_id: string;
+    password: string;
+  }>(
+    "SELECT id, nisn, name, class_id, password FROM students WHERE nisn = ? AND active = 1",
+    [cleanUsername]
+  );
+
+  if (student && student.password === cleanPassword) {
+    return {
+      userId: student.id,
+      username: student.nisn,
+      name: student.name,
+      role: "siswa",
+      classId: student.class_id,
+    };
+  }
+
+  // 3. Fallback Admin dari .env
+  const adminUser = process.env.ADMIN_USERNAME || "admin";
+  const adminPass = process.env.ADMIN_PASSWORD || "admin";
+  if (cleanUsername === adminUser && cleanPassword === adminPass) {
+    return {
+      userId: "admin-env",
+      username: adminUser,
+      name: "Administrator Kurikulum",
+      role: "admin",
+      classId: null,
+    };
+  }
+
+  return null;
 }
 
-export async function createSession(username: string): Promise<string> {
-  const token = await new SignJWT({ sub: username })
+export async function createSession(data: AuthSessionData): Promise<string> {
+  const token = await new SignJWT({
+    sub: data.userId,
+    username: data.username,
+    name: data.name,
+    role: data.role,
+    classId: data.classId ?? null,
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_DURATION_SECONDS}s`)
     .sign(getAuthSecretKey());
+
   return token;
 }
 
@@ -61,22 +112,28 @@ export async function clearSessionCookie() {
   cookieStore.delete(COOKIE_NAME);
 }
 
-export async function getSessionUsername(): Promise<string | null> {
+export async function getSessionData(): Promise<AuthSessionData | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
 
   try {
     const { payload } = await jwtVerify(token, getAuthSecretKey());
-    return (payload.sub as string) ?? null;
+    return {
+      userId: (payload.sub as string) || "",
+      username: (payload.username as string) || "",
+      name: (payload.name as string) || "",
+      role: (payload.role as UserRole) || "siswa",
+      classId: (payload.classId as string) || null,
+    };
   } catch {
     return null;
   }
 }
 
 export async function isAuthenticated(): Promise<boolean> {
-  const username = await getSessionUsername();
-  return username !== null;
+  const data = await getSessionData();
+  return data !== null;
 }
 
 export const SESSION_COOKIE_NAME = COOKIE_NAME;
