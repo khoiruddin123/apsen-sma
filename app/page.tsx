@@ -5,31 +5,11 @@ import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"siswa" | "guru" | "wali_kelas">("siswa");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const handleQuickFill = (role: "siswa" | "guru" | "wali_kelas" | "admin") => {
-    setError(null);
-    if (role === "siswa") {
-      setActiveTab("siswa");
-      setUsername("1001");
-      setPassword("123456");
-    } else if (role === "guru") {
-      setActiveTab("guru");
-      setUsername("guru");
-      setPassword("guru");
-    } else if (role === "wali_kelas") {
-      setActiveTab("wali_kelas");
-      setUsername("walikelas");
-      setPassword("walikelas");
-    } else {
-      setUsername("admin");
-      setPassword("admin");
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,10 +25,10 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Gagal login.");
+        throw new Error(data.error || "Gagal melakukan autentikasi.");
       }
 
-      // Redirect sesuai role
+      // Auto redirect based on role
       if (data.user.role === "siswa") {
         router.push("/student");
       } else if (data.user.role === "guru") {
@@ -65,144 +45,94 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen navy-gradient flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      {/* Dynamic Background Ornaments */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div className="w-full max-w-md bg-slate-900/90 border border-slate-700/80 rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-xl z-10">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 text-white text-3xl font-black shadow-lg shadow-blue-500/40 mb-3">
-            🎓
-          </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">APSEN SMA</h1>
-          <p className="text-sm text-slate-300 font-medium mt-1">Sistem Presensi KBM Sekolah Menengah Atas</p>
+    <main className="min-h-screen bg-white flex items-center justify-center p-4 font-sans">
+      
+      {/* Centered Modern Login Card */}
+      <div className="w-full max-w-sm bg-white rounded-3xl p-8 sm:p-9 border border-slate-200/90 shadow-xl text-center relative z-10">
+        
+        {/* Emblem Logo */}
+        <div className="flex justify-center mb-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-sd.png"
+            alt="Logo Sekolah SMA"
+            className="w-20 h-20 object-contain drop-shadow-sm transition-transform hover:scale-105"
+          />
         </div>
 
-        {/* Tab Selector 3 Aktor */}
-        <div className="grid grid-cols-3 gap-1 bg-slate-800 p-1.5 rounded-xl mb-6 border border-slate-700">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("siswa");
-              setUsername("");
-              setPassword("");
-            }}
-            className={`py-2 text-xs font-semibold rounded-lg transition-all ${
-              activeTab === "siswa"
-                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            👦 Murid
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("guru");
-              setUsername("");
-              setPassword("");
-            }}
-            className={`py-2 text-xs font-semibold rounded-lg transition-all ${
-              activeTab === "guru"
-                ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            👨‍🏫 Guru Mapel
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("wali_kelas");
-              setUsername("");
-              setPassword("");
-            }}
-            className={`py-2 text-xs font-semibold rounded-lg transition-all ${
-              activeTab === "wali_kelas"
-                ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            👨‍💼 Wali Kelas
-          </button>
+        {/* Title Header */}
+        <div className="mb-6 space-y-0.5">
+          <p className="text-xs font-bold text-amber-600 tracking-wide">
+            Presensi & Absensi Siswa Akademik
+          </p>
+          <h1 className="text-lg sm:text-xl font-black text-emerald-700 tracking-wide uppercase">
+            ABSEN DIGITAL SMA
+          </h1>
         </div>
 
+        {/* Error Notification */}
         {error && (
-          <div className="mb-4 p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-rose-300 text-xs font-semibold text-center">
-            ⚠️ {error}
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs text-left font-semibold">
+            {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form Input */}
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-              {activeTab === "siswa" ? "NISN Siswa" : "Username / NIP"}
+            <label className="block text-xs font-semibold text-amber-700 mb-1">
+              Username / NISN
             </label>
             <input
               type="text"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder={activeTab === "siswa" ? "Masukkan NISN (Contoh: 1001)" : "Masukkan Username"}
-              className="w-full bg-slate-800/90 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-500 font-mono"
+              placeholder="Masukkan Username atau NISN"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Password
+            <label className="block text-xs font-semibold text-amber-700 mb-1">
+              Kata Sandi (Password)
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-slate-800/90 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-500 font-mono"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Masukkan Kata Sandi"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 pr-10 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer text-xs"
+              >
+                {showPassword ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.025 10.025 0 013.682-.743c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl py-3 mt-3 transition-colors shadow-sm cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <span>Memproses...</span>
-            ) : (
-              <>
-                <span>Masuk Portal {activeTab === "siswa" ? "Murid" : activeTab === "guru" ? "Guru" : "Wali Kelas"}</span>
-                <span>➔</span>
-              </>
-            )}
+            {loading ? "Memproses..." : "Masuk"}
           </button>
         </form>
-
-        {/* Quick Demo Login Preset Buttons */}
-        <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-          <p className="text-xs font-semibold text-slate-400 mb-3">⚡ Uji Coba Cepat 3 Aktor (Demo Login):</p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button
-              onClick={() => handleQuickFill("siswa")}
-              className="px-2.5 py-1.5 bg-emerald-950/60 border border-emerald-700/50 hover:bg-emerald-900 text-emerald-300 text-xs rounded-lg font-medium transition-all"
-            >
-              👦 Login Murid (1001)
-            </button>
-            <button
-              onClick={() => handleQuickFill("guru")}
-              className="px-2.5 py-1.5 bg-blue-950/60 border border-blue-700/50 hover:bg-blue-900 text-blue-300 text-xs rounded-lg font-medium transition-all"
-            >
-              👨‍🏫 Login Guru
-            </button>
-            <button
-              onClick={() => handleQuickFill("wali_kelas")}
-              className="px-2.5 py-1.5 bg-purple-950/60 border border-purple-700/50 hover:bg-purple-900 text-purple-300 text-xs rounded-lg font-medium transition-all"
-            >
-              👨‍💼 Login Wali Kelas
-            </button>
-          </div>
-        </div>
       </div>
     </main>
   );

@@ -13,7 +13,10 @@ export async function studentScanQrCode(
 
   // Cek apakah siswa terdaftar di kelas sesi tersebut
   const student = await queryOne<any>(
-    "SELECT id, name, class_id FROM students WHERE id = ? AND active = 1",
+    `SELECT s.id, s.name, s.class_id, c.name as class_name
+     FROM students s
+     JOIN classes c ON s.class_id = c.id
+     WHERE s.id = ? AND s.active = 1`,
     [studentId]
   );
 
@@ -24,7 +27,7 @@ export async function studentScanQrCode(
   if (student.class_id !== session.class_id) {
     return {
       ok: false,
-      message: `Maaf, Anda tidak terdaftar di kelas ini (${session.class_name}).`,
+      message: `Maaf, Anda (${student.name}) terdaftar di kelas ${student.class_name}, sedangkan Sesi ini dibuka untuk kelas ${session.class_name}.`,
     };
   }
 

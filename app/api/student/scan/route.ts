@@ -5,10 +5,10 @@ import { studentScanQrCode } from "@/lib/services/attendance";
 export async function POST(request: Request) {
   try {
     const userSession = await getSessionData();
-    if (!userSession || userSession.role !== "siswa") {
+    if (!userSession) {
       return NextResponse.json(
-        { error: "Akses ditolak. Hanya akun Murid / Siswa yang bisa melakukan scan." },
-        { status: 403 }
+        { error: "Sesi tidak ditemukan. Silakan login kembali." },
+        { status: 401 }
       );
     }
 
@@ -22,7 +22,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await studentScanQrCode(userSession.userId, qrToken);
+    // Jika yang login siswa, gunakan ID siswa tersebut. Jika admin/guru/walikelas sedang menguji portal siswa, gunakan ID student default (std-001)
+    const targetStudentId = userSession.role === "siswa" ? userSession.userId : "std-001";
+
+    const result = await studentScanQrCode(targetStudentId, qrToken);
     if (!result.ok) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }

@@ -6,7 +6,7 @@ import { query } from "@/lib/db";
 export async function GET(request: Request) {
   try {
     const userSession = await getSessionData();
-    if (!userSession || (userSession.role !== "wali_kelas" && userSession.role !== "admin")) {
+    if (!userSession || (userSession.role !== "wali_kelas" && userSession.role !== "admin" && userSession.role !== "guru")) {
       return NextResponse.json(
         { error: "Akses khusus Wali Kelas / Admin." },
         { status: 403 }
@@ -15,6 +15,8 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const requestedClassId = searchParams.get("classId");
+    const month = searchParams.get("month") || undefined;
+    const subject = searchParams.get("subject") || undefined;
 
     const classId = requestedClassId || userSession.classId || "cls-xi-ipa1";
 
@@ -24,7 +26,7 @@ export async function GET(request: Request) {
       [classId]
     );
 
-    const summary = await getClassSummaryForWaliKelas(classId);
+    const summary = await getClassSummaryForWaliKelas(classId, month, subject);
 
     return NextResponse.json({
       classInfo: classInfoRow[0] || null,

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const userSession = await getSessionData();
-    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin")) {
+    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin" && userSession.role !== "wali_kelas")) {
       return NextResponse.json(
         { error: "Hanya Guru yang dapat melakukan absensi manual." },
         { status: 403 }

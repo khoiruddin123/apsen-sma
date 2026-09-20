@@ -5,7 +5,7 @@ import { openSession, closeSession, getActiveSessionByClass, getSessionById } fr
 export async function GET(request: Request) {
   try {
     const userSession = await getSessionData();
-    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin")) {
+    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin" && userSession.role !== "wali_kelas")) {
       return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
     }
 
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const userSession = await getSessionData();
-    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin")) {
+    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin" && userSession.role !== "wali_kelas")) {
       return NextResponse.json(
         { error: "Hanya Guru Mata Pelajaran yang dapat membuka sesi KBM." },
         { status: 403 }
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const userSession = await getSessionData();
-    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin")) {
+    if (!userSession || (userSession.role !== "guru" && userSession.role !== "admin" && userSession.role !== "wali_kelas")) {
       return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
     }
 
